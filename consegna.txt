@@ -1,0 +1,1 @@
+# Realizzare in Python/libVLC un sistema client-server multithread con autenticazione PAM, per lo streaming audio multiutente (più stream in contemporanea). 
