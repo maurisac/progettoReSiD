@@ -1,26 +1,41 @@
 import socket
-import vlc
 
-def start_client():
-    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client.connect(("localhost", 9999))  # Sostituisci con l'indirizzo del server
+SERVER_HOST = 'localhost'
+SERVER_PORT = 9999
 
-    while True:
-        response = client.recv(4096).decode()
-        if "Username" in response:
-            username = input(response)
-            client.send(username.encode())
-        elif "Password" in response:
-            password = input(response)
-            client.send(password.encode())
-        elif "Autenticazione riuscita" in response:
-            print(response)
-            break
-        else:
-            print(response)
+def connection():
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        sock.connect((SERVER_HOST, SERVER_PORT))
+        
+        while True:
+            response = sock.recv(1024).decode().strip()
+            print(f"Server: {response}")
+            
+            message = input("Tu: ")
+            sock.sendall(message.encode())
+            
+            if message.lower() == 'esci':
+                break
+            
+            if message.lower() == 'accedi':
+                response = sock.recv(1024).decode().strip()
+                print(f"Server: {response}")
 
-    # Codice per ricevere lo stream audio e riprodurlo con VLC
-    # ...
+                username = input()
+                sock.sendall(username.encode())
+                
+                response = sock.recv(1024).decode().strip()
+                print(f"Server: {response}")
+                
+                password = input()
+                sock.sendall(password.encode())
+                
+                response = sock.recv(1024).decode().strip()
+                print(f"Server: {response}")
 
-if __name__ == "__main__":
-    start_client()
+            if message == 'Autenticato!':
+                break
+
+connection()
+
+
