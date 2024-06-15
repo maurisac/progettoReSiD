@@ -17,7 +17,7 @@ def connection():
             if message.lower() == 'esci':
                 break
             
-            if message.lower() == 'accedi':
+            else:
                 response = sock.recv(1024).decode().strip()
                 print(f"Server: {response}")
 
@@ -33,8 +33,6 @@ def connection():
                 response = sock.recv(1024).decode().strip()
                 print(f"Server: {response}")
 
-            if message == 'Autenticato!':
-                break
 
 connection()
 
