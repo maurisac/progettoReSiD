@@ -1,5 +1,5 @@
 def add_user(username, password):
-    with open('users.txt', 'a') as file:
+    with open('users.txt', 'a+') as file:
         if username in file:
             print("Username già esistente, riprovare con un altro username!")
             return False

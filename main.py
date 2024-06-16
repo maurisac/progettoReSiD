@@ -28,16 +28,18 @@ def handleClient(clientSock, clientAddr):
         if mode.lower() == 'registrazione':
             
             if not authuser.add_user(username_from_client, password_from_client):
-                print("C'è stato un errore")
+                clientSock.send(b"Errore")
                 return -1
-            print("Registrazione effettuata con successo!")
+            clientSock.send(b"Registrazione effettuata con successo!")
+            menu(username_from_client, clientSock, clientAddr)
 
         elif mode.lower() == 'accesso':
             if not authuser.authenticate_user(username_from_client, password_from_client):
-                print("C'è stato un errore")
+                clientSock.send(b"Errore")
                 return -1
-            else:
-                print("Accesso eseguito correttamente")
+            clientSock.send(b"Accesso eseguito correttamente")
+            menu(username_from_client, clientSock, clientAddr)
+
 
         else:
             print("Le operazioni disponibili sono registrazione/accesso")
@@ -75,6 +77,28 @@ def streaming(username, clientSock, clientAddr):
         
         #logica di streaming (apertura finestra vlc-->streaming-->chiusura)
         
+
+
+def add_user(username, password):
+    with open('users.txt', 'a+') as file:
+        if username in file:
+            print("Username già esistente, riprovare con un altro username!")
+            return False
+        elif type(username) is str and type(password) is str:
+            file.write(f"{username}:{password}\n")
+            return True
+        else: 
+            print("C'è stato un errore")
+            return False
+
+
+def authenticate_user(username, password):
+    with open('users.txt', 'r') as file:
+        for line in file:
+            stored_username, stored_password = line.strip().split(':')
+            if stored_username == username and stored_password == password:
+                return True
+    return False
 
 
 
