@@ -7,6 +7,7 @@ import socket
 from threading import Thread, Lock
 import authuser
 import fileHandler
+import vlc
 
 BUFFERSIZE = 1024
 MUTEX = Lock()
@@ -49,6 +50,7 @@ def handleClient(clientSock, clientAddr):
             if authuser.add_user(username, password) == False:
                 clientSock.send(b"Errore: registrazione fallita, Verrai disconnesso.")
                 MUTEX.release()
+                clientSock.close()
                 return
             clientSock.send(b"Registrazione effettuata con successo!")
             MUTEX.release()
@@ -57,6 +59,7 @@ def handleClient(clientSock, clientAddr):
             if not authuser.authenticate_user(username, password):
                 clientSock.send(b"Errore: autenticazione fallita, Verrai disconnesso.")
                 MUTEX.release()
+                clientSock.close()
                 return
             clientSock.send(b"Accesso effettuato con successo!")
             MUTEX.release()
@@ -64,15 +67,15 @@ def handleClient(clientSock, clientAddr):
         else:
             clientSock.send(b"Operazione non valida. Disconnessione.")
             MUTEX.release()
+            clientSock.close()
             return
             
     except Exception as e:
         print(f"[ERROR] Errore durante la gestione del client {clientAddr}: {e}")
-
+        if clientSock:
+            clientSock.close()
 
     finally:
-        clientSock.send(b"Verrai disconnesso.")
-        clientSock.close()
         print(f"[INFO] Connessione chiusa con: {clientAddr}")
 
 
@@ -94,15 +97,37 @@ def menu(username, clientSock, clientAddr):
 
 
 def streaming(username, clientSock, clientAddr):
-    clientSock.sendall(b"Scegli l'ID dell'audio da riprodurre: ")
     files = fileHandler.listFiles('./files')
-    i = 0
-    for _ in files:
-        clientSock.sendall(f"Audio: {_} \t\tID: {i}".encode())
-        i = i + 1
-    chosenAudio = clientSock.recv(BUFFERSIZE).strip().decode('utf-8')
-    # Logica di streaming (es. apertura finestra VLC, streaming, chiusura)
-    # clientSock.sendall(f"Audio scelto: {audios[int(chosenAudio)].strip()}".encode())
+    files_list_str = ''
+    for i, file_name in enumerate(files):
+        files_list_str = f"ID: {i} \tAudio: {file_name}\n"
+    
+    clientSock.sendall(f"Scegli l'ID dell'audio da riprodurre\n{files_list_str} ".encode())
+
+    chosenAudioId = clientSock.recv(BUFFERSIZE).strip().decode('utf-8')
+    clientSock.sendall(f"Riproduco il file {chosenAudioId} ".encode())
+
+    try:
+        chosen_audio_id = int(chosenAudioId)
+        
+        if 0 <= chosen_audio_id < len(files):
+            chosen_audio = files[chosen_audio_id]
+            print(f"[INFO] L'utente {username} ha scelto di riprodurre: {chosen_audio}")
+
+            with open(f'./files/{chosen_audio}', 'rb') as f:
+                while True:
+                    data = f.read(BUFFERSIZE)
+                    if not data:
+                        break
+                    clientSock.sendall(data)  
+
+            clientSock.sendall(b"Streaming terminato. Connessione chiusa.\n")
+        else:
+            clientSock.sendall(b"ID non valido. Connessione chiusa.\n")
+    except ValueError:
+        clientSock.sendall(b"Input non valido. Connessione chiusa.\n")
+
+    clientSock.close()
 
 
 
@@ -111,7 +136,4 @@ while True:
     client_socket, client_address = server.accept()
     client_thread = Thread(target=handleClient, args=(client_socket, client_address))
     client_thread.start()
-
-
-
 
