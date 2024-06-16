@@ -10,33 +10,72 @@ import authuser
 import socket
 
 from threading import Thread, Semaphore
+BUFFERSIZE = 1024
 
-
-def handleClient(client_sock, client_addr):
-    print(f"[INFO] Connessione accettata da: {client_addr}")
+def handleClient(clientSock, clientAddr):
+    print(f"[INFO] Connessione accettata da: {clientAddr}")
     # Autenticazione semplice
     try:
-        client_socket.send(b"Inserire modalita registrazione/accesso: ")
-        mode = client_socket.recv(1024).strip().decode('utf-8')
+        clientSock.send(b"Inserire modalita registrazione/accesso: ")
+        mode = clientSock.recv(BUFFERSIZE).strip().decode('utf-8')
 
-        client_socket.send(b"Username: ")
-        username_from_client = client_socket.recv(1024).strip().decode('utf-8')
+        clientSock.send(b"Username: ")
+        username_from_client = clientSock.recv(BUFFERSIZE).strip().decode('utf-8')
         
-        client_socket.send(b"Password: ")
-        password_from_client = client_socket.recv(1024).strip().decode('utf-8')
+        clientSock.send(b"Password: ")
+        password_from_client = clientSock.recv(BUFFERSIZE).strip().decode('utf-8')
 
-        if mode == 'accesso'.lower():
-            if authuser.add_user(username_from_client, password_from_client):
+        if mode.lower() == 'registrazione':
+            
+            if not authuser.add_user(username_from_client, password_from_client):
+                print("C'è stato un errore")
+                return -1
+            print("Registrazione effettuata con successo!")
+
+        elif mode.lower() == 'accesso':
+            if not authuser.authenticate_user(username_from_client, password_from_client):
+                print("C'è stato un errore")
+                return -1
+            else:
                 print("Accesso eseguito correttamente")
 
-            
+        else:
+            print("Le operazioni disponibili sono registrazione/accesso")
+            clientSock.close()
+
 
     except Exception as e:
-        print(f"[ERROR] Errore durante la gestione del client {client_address}: {e}")
+        print(f"[ERROR] Errore durante la gestione del client {clientAddr}: {e}")
     
     finally:
-        client_socket.close()
-        print(f"[INFO] Connessione chiusa con: {client_address}")
+        clientSock.close()
+        print(f"[INFO] Connessione chiusa con: {clientAddr}")
+
+
+def menu(username, clientSock, clientAddr):
+    clientSock.sendall(f"Benvenuto {username}, inserisci l'operazione che vuoi effettuare:\n1: Streaming audio\n2:Esci".encode())
+    mode = clientSock.recv(BUFFERSIZE).strip().decode('utf-8')
+    
+    if mode.lower() == '1' or mode.lower().startswith('streaming'):
+        pass #streaming()
+    elif mode.lower() == '2' or mode.lower().startswith('esci'):
+        clientSock.close()
+
+
+def streaming(username, clientSock, clientAddr):
+    clientSock.sendall(f"Scegli l'ID dell'audio da riprodurre: ".encode())
+    with open("audios.txt", "r") as file:
+        audios = []
+        for _ in file.read():
+            i = 0
+            clientSock.sendall(f"ID: {i}, audio '{_}'".encode())
+            audios.append(_)
+            i = i + 1
+        chosenAudio = clientSock.recv(BUFFERSIZE).strip().decode('utf-8')
+        
+        #logica di streaming (apertura finestra vlc-->streaming-->chiusura)
+        
+
 
 
 SERVER_HOST = '0.0.0.0'
@@ -53,19 +92,19 @@ while True:
     try:
         while True:
             client_socket.sendall("Benvenuto! Se hai già un profilo inserisci 'accedi', in caso contrario inserisci 'registrati'. Se desideri uscire inserisci 'esci'.".encode())
-            message = client_socket.recv(1024).decode().strip()
+            message = client_socket.recv(BUFFERSIZE).decode().strip()
             print(f"Messaggio ricevuto: {message}")
 
             if message.lower() == 'accedi':
                 credential = []
 
                 client_socket.sendall("Inserisci il tuo username: ".encode())
-                username = client_socket.recv(1024).decode().strip()
+                username = client_socket.recv(BUFFERSIZE).decode().strip()
                 print(f"Username ricevuto: {username}")
                 credential.append(username)
 
                 client_socket.sendall("Inserisci la tua password: ".encode())
-                password = client_socket.recv(1024).decode().strip()
+                password = client_socket.recv(BUFFERSIZE).decode().strip()
                 print(f"Password ricevuta: {password}")
                 credential.append(password)
 
@@ -84,12 +123,12 @@ while True:
                 credential = []
 
                 client_socket.sendall("Inserisci il tuo username: ".encode())
-                username = client_socket.recv(1024).decode().strip()
+                username = client_socket.recv(BUFFERSIZE).decode().strip()
                 print(f"Username ricevuto: {username}")
                 credential.append(username)
 
                 client_socket.sendall("Inserisci la tua password: ".encode())
-                password = client_socket.recv(1024).decode().strip()
+                password = client_socket.recv(BUFFERSIZE).decode().strip()
                 print(f"Password ricevuta: {password}")
                 credential.append(password)
 
