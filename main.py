@@ -44,33 +44,34 @@ def handleClient(clientSock, clientAddr):
         password = clientSock.recv(BUFFERSIZE).strip().decode('utf-8')
 
 
-        with MUTEX:
-            if mode.lower() == 'registrazione':
-                if authuser.add_user(username, password) == False:
-                    clientSock.send(b"Errore: registrazione fallita, Verrai disconnesso.")
-                    MUTEX.release()
-                    return
-                clientSock.send(b"Registrazione effettuata con successo!")
-                MUTEX.release()
-                menu(username, clientSock, clientAddr)
-            elif mode.lower() == 'accedi':
-                if not authuser.authenticate_user(username, password):
-                    clientSock.send(b"Errore: autenticazione fallita, Verrai disconnesso.")
-                    MUTEX.release()
-                    return
-                clientSock.send(b"Accesso effettuato con successo!")
-                MUTEX.release()
-                menu(username, clientSock, clientAddr)
-            else:
-                clientSock.send(b"Operazione non valida. Disconnessione.")
+        MUTEX.acquire()
+        if mode.lower() == 'registrazione':
+            if authuser.add_user(username, password) == False:
+                clientSock.send(b"Errore: registrazione fallita, Verrai disconnesso.")
                 MUTEX.release()
                 return
+            clientSock.send(b"Registrazione effettuata con successo!")
+            MUTEX.release()
+            menu(username, clientSock, clientAddr)
+        elif mode.lower() == 'accedi':
+            if not authuser.authenticate_user(username, password):
+                clientSock.send(b"Errore: autenticazione fallita, Verrai disconnesso.")
+                MUTEX.release()
+                return
+            clientSock.send(b"Accesso effettuato con successo!")
+            MUTEX.release()
+            menu(username, clientSock, clientAddr)
+        else:
+            clientSock.send(b"Operazione non valida. Disconnessione.")
+            MUTEX.release()
+            return
             
     except Exception as e:
         print(f"[ERROR] Errore durante la gestione del client {clientAddr}: {e}")
 
 
     finally:
+        clientSock.send(b"Verrai disconnesso.")
         clientSock.close()
         print(f"[INFO] Connessione chiusa con: {clientAddr}")
 
@@ -94,8 +95,11 @@ def menu(username, clientSock, clientAddr):
 
 def streaming(username, clientSock, clientAddr):
     clientSock.sendall(b"Scegli l'ID dell'audio da riprodurre: ")
-    # clientSock.sendall(f"{}".encode())
-    fileHandler.listFiles('./files')
+    files = fileHandler.listFiles('./files')
+    i = 0
+    for _ in files:
+        clientSock.sendall(f"Audio: {_} \t\tID: {i}".encode())
+        i = i + 1
     chosenAudio = clientSock.recv(BUFFERSIZE).strip().decode('utf-8')
     # Logica di streaming (es. apertura finestra VLC, streaming, chiusura)
     # clientSock.sendall(f"Audio scelto: {audios[int(chosenAudio)].strip()}".encode())

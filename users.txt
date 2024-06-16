@@ -2,3 +2,9 @@ Adel:Shatani
 Maurizio:Sacc
 Paolo:Brosio
 50:320
+patato:miao
+ics:chri
+pip:lel
+catto:miao
+Ubuntu:Urca
+higgs:chri

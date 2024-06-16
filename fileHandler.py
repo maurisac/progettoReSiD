@@ -10,4 +10,4 @@ def listFiles(dir):
     
     return files
 
-print(listFiles('./files'))
+# print(listFiles('./files'))
