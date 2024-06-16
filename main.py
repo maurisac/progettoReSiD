@@ -14,7 +14,7 @@ SERVER_HOST = '0.0.0.0'
 SERVER_PORT = 9999
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)  # Mi sono documentato su come riusare una porta subito, ho visto sto comando, penso funzioni (cancella sto commento appena leggi)
+server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 server.bind((SERVER_HOST, SERVER_PORT))
 server.listen(5)
 print(f"Server in ascolto all'indirizzo: {SERVER_HOST}:{SERVER_PORT}")
