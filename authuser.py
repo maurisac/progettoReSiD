@@ -1,14 +1,18 @@
 def add_user(username, password):
+    if not isinstance(username, str):
+        return False
+
     with open('users.txt', 'a+') as file:
-        if username in file:
-            print("Username già esistente, riprovare con un altro username!")
-            return False
-        elif type(username) is str and type(password) is str:
-            file.write(f"{username}:{password}\n")
-            return True
-        else: 
-            print("C'è stato un errore")
-            return False
+        file.seek(0)
+        for line in file:
+            parts = line.strip().split(':')
+            if len(parts) != 2:
+                continue
+            stored_username, _ = parts
+            if stored_username == username:
+                return False
+        file.write(f"{username}:{password}\n")
+        return True
 
 
 def authenticate_user(username, password):
