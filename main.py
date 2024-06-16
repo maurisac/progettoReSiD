@@ -6,6 +6,7 @@
 import socket
 from threading import Thread, Lock
 import authuser
+import fileHandler
 
 BUFFERSIZE = 1024
 MUTEX = Lock()
@@ -93,13 +94,11 @@ def menu(username, clientSock, clientAddr):
 
 def streaming(username, clientSock, clientAddr):
     clientSock.sendall(b"Scegli l'ID dell'audio da riprodurre: ")
-    with open("audios.txt", "r") as file:
-        audios = file.readlines()
-        for i, audio in enumerate(audios):
-            clientSock.sendall(f"ID: {i}, audio: '{audio.strip()}'\n".encode())
-        chosenAudio = clientSock.recv(BUFFERSIZE).strip().decode('utf-8')
-        # Logica di streaming (es. apertura finestra VLC, streaming, chiusura)
-        clientSock.sendall(f"Audio scelto: {audios[int(chosenAudio)].strip()}".encode())
+    # clientSock.sendall(f"{}".encode())
+    fileHandler.listFiles('./files')
+    chosenAudio = clientSock.recv(BUFFERSIZE).strip().decode('utf-8')
+    # Logica di streaming (es. apertura finestra VLC, streaming, chiusura)
+    # clientSock.sendall(f"Audio scelto: {audios[int(chosenAudio)].strip()}".encode())
 
 
 
