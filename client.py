@@ -8,7 +8,6 @@ def connection():
         sock.connect((SERVER_HOST, SERVER_PORT))
 
         while True:
-
             response = sock.recv(1024).decode().strip()
             print(f"Server: {response}")
 
@@ -16,13 +15,13 @@ def connection():
                 print("Disconnessione dal server.")
                 break
 
-            if "menu." not in response or "successo!" not in response:
-                message = input("Tu: ")
-                sock.sendall(message.encode())
-            
+            if "menu" in response or "successo" in response:
+                continue
+
+            message = input("Tu: ")
+            sock.sendall(message.encode())
+
             if message.lower() == 'esci':
                 break
 
 connection()
-
-

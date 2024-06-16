@@ -1,9 +1,4 @@
 Adel:Shatani
 Maurizio:Sacc
-Paolo:2001
-Mimmo:Cane
-2001:adel
-mau:123
-mau3r:1234
-miao:smuci
-sora:123
+Paolo:Brosio
+50:320
