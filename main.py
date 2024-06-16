@@ -94,11 +94,11 @@ def menu(username, clientSock, clientAddr):
 
 def streaming(username, clientSock, clientAddr):
     clientSock.sendall(b"Scegli l'ID dell'audio da riprodurre: ")
-    clientSock.sendall(f"{}".encode())
+    # clientSock.sendall(f"{}".encode())
     fileHandler.listFiles('./files')
     chosenAudio = clientSock.recv(BUFFERSIZE).strip().decode('utf-8')
     # Logica di streaming (es. apertura finestra VLC, streaming, chiusura)
-    clientSock.sendall(f"Audio scelto: {audios[int(chosenAudio)].strip()}".encode())
+    # clientSock.sendall(f"Audio scelto: {audios[int(chosenAudio)].strip()}".encode())
 
 
 
