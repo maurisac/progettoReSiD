@@ -2,7 +2,6 @@ import socket
 from threading import Thread, Lock
 import authuser
 import fileHandler
-import vlc
 import os
 
 BUFFERSIZE = 1024
@@ -96,24 +95,20 @@ def streaming(username, clientSock, clientAddr):
             chosen_audio = files[chosen_audio_id]
             file_path = os.path.abspath(f'./files/{chosen_audio}')
 
-            if not os.access(file_path, os.R_OK):  # Controlla i permessi del file
+            if not os.access(file_path, os.R_OK):
                 send_message(clientSock, "Errore: il file non può essere letto. Verifica i permessi.")
                 return
 
             print(f"[INFO] L'utente {username} ha scelto di riprodurre: {chosen_audio}")
 
-            instance = vlc.Instance()
-            player = instance.media_player_new()
-            media = instance.media_new_path(file_path)
-            player.set_media(media)
-            player.play()
+            with open(file_path, 'rb') as f:
+                while True:
+                    data = f.read(BUFFERSIZE)
+                    if not data:
+                        break
+                    clientSock.sendall(data)
 
-            while True:
-                state = player.get_state()
-                if state in [vlc.State.Ended, vlc.State.Error]:  # Controlla lo stato del player VLC
-                    break
-
-            send_message(clientSock, "Streaming terminato. Connessione chiusa.")
+            send_message(clientSock, "Streaming terminato.")
         else:
             send_message(clientSock, "ID non valido. Connessione chiusa.")
     except ValueError:

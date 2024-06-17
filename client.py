@@ -1,31 +1,52 @@
 import socket
 import vlc
 import threading
+import os
 
 SERVER_HOST = 'localhost'
 SERVER_PORT = 9999
+# SERVER_HOST = '192.168.128.237'
+# SERVER_PORT = 12345
+
 BUFFERSIZE = 1024
 
 def play_stream():
     instance = vlc.Instance()
     player = instance.media_player_new()
 
-    # Configura il player per ricevere dati da un buffer o flusso in tempo reale
-    player.set_mrl('file:///tmp/stream.mp3')  # Puoi usare un file temporaneo come buffer
+    temp_file_path = '/tmp/stream.mp3'
 
+    player.set_mrl(f'file://{temp_file_path}')
     player.play()
-    
-    # Continua a riprodurre fino a quando c'è uno stream disponibile
-    while player.is_playing():
-        continue
+
+    while True:
+        command = input("Comandi disponibili: play, pause, stop, forward, backward, quit\nTu: ").strip().lower()
+
+        if command == 'play':
+            player.play()
+        elif command == 'pause':
+            player.pause()
+        elif command == 'stop':
+            player.stop()
+        elif command == 'forward':
+            player.set_time(player.get_time() + 10000)  # Avanti di 10 secondi
+        elif command == 'backward':
+            player.set_time(player.get_time() - 10000)  # Indietro di 10 secondi
+        elif command == 'quit':
+            player.stop()
+            break
+        else:
+            print("Comando non valido. Riprova.")
 
 def receive_stream(sock):
-    with open('/tmp/stream.mp3', 'wb') as f:  # Salva i dati in un file temporaneo
+    temp_file_path = '/tmp/stream.mp3'
+    with open(temp_file_path, 'wb') as f:
         while True:
             data = sock.recv(BUFFERSIZE)
             if not data:
                 break
             f.write(data)
+    print("[INFO] Streaming terminato, file salvato in /tmp/stream.mp3")
 
 def connection():
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
@@ -33,7 +54,7 @@ def connection():
 
         while True:
             response = sock.recv(BUFFERSIZE).decode().strip()
-            print(f"[SERVER]{response}")
+            print(f"[SERVER] {response}")
 
             if "Verrai disconnesso." in response or "Arrivederci!" in response or "Connessione chiusa" in response:
                 print("Disconnessione dal server.")
