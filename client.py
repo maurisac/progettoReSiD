@@ -4,6 +4,8 @@ import threading
 
 SERVER_HOST = 'localhost'
 SERVER_PORT = 9999
+# SERVER_HOST = '192.168.128.237'
+# SERVER_PORT = 12345
 
 BUFFERSIZE = 1024
 
@@ -34,21 +36,18 @@ def connection():
 
         while True:
             response = sock.recv(BUFFERSIZE).decode().strip()
-            print(f"Server: {response}")
+            print(f"[SERVER]{response}")
 
             if "Verrai disconnesso." in response or "Arrivederci!" in response or "Connessione chiusa" in response:
                 print("Disconnessione dal server.")
                 break
 
-            if "menu" in response or "successo" in response:
-                continue
-
             message = input("Tu: ")
             sock.sendall(message.encode())
 
-            if message == '1':  # Se il client sceglie di avviare lo streaming
+            if 'Riproduco il file' in response:
                 threading.Thread(target=play_stream).start()
-                receive_stream(sock)  # Inizia a ricevere lo stream
+                receive_stream(sock)
 
             if message.lower() == 'esci':
                 break

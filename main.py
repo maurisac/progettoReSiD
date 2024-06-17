@@ -10,6 +10,8 @@ MUTEX = Lock()
 
 SERVER_HOST = '0.0.0.0'
 SERVER_PORT = 9999
+# SERVER_HOST = '192.168.128.237'
+# SERVER_PORT = 12345
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -23,7 +25,7 @@ def send_message(sock, message):
 def handleClient(clientSock, clientAddr):
     print(f"[INFO] Connessione accettata da: {clientAddr}")
     try:
-        send_message(clientSock, "Inserire modalita: 'registrazione' o 'accedi': ")
+        send_message(clientSock, "Inserire modalità:\nRegistrazione\nAccedi\nEsci ")
         mode = clientSock.recv(BUFFERSIZE).strip().decode('utf-8')
 
         if mode.lower() not in ['registrazione', 'accedi']:
