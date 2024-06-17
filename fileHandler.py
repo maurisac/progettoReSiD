@@ -9,5 +9,3 @@ def listFiles(dir):
         files.append(_)
     
     return files
-
-print(listFiles('./files'))
