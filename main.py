@@ -59,7 +59,6 @@ def handleClient(clientSock, clientAddr):
     except Exception as e:
         print(f"[ERROR] Errore durante la gestione del client {clientAddr}: {e}")
     finally:
-        clientSock.close()
         print(f"[INFO] Connessione chiusa con: {clientAddr}")
 
 def menu(username, clientSock, clientAddr):
