@@ -4,9 +4,6 @@ import threading
 
 SERVER_HOST = 'localhost'
 SERVER_PORT = 9999
-# SERVER_HOST = '192.168.128.237'
-# SERVER_PORT = 12345
-
 BUFFERSIZE = 1024
 
 def play_stream():
