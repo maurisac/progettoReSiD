@@ -1,42 +1,13 @@
 import socket
-import vlc
+import subprocess
 import threading
-import os
 
 SERVER_HOST = 'localhost'
 SERVER_PORT = 9999
-# SERVER_HOST = '192.168.128.237'
-# SERVER_PORT = 12345
-
 BUFFERSIZE = 1024
 
-def play_stream():
-    instance = vlc.Instance()
-    player = instance.media_player_new()
-
-    temp_file_path = '/tmp/stream.mp3'
-
-    player.set_mrl(f'file://{temp_file_path}')
-    player.play()
-
-    while True:
-        command = input("Comandi disponibili: play, pause, stop, forward, backward, quit\nTu: ").strip().lower()
-
-        if command == 'play':
-            player.play()
-        elif command == 'pause':
-            player.pause()
-        elif command == 'stop':
-            player.stop()
-        elif command == 'forward':
-            player.set_time(player.get_time() + 10000)  # Avanti di 10 secondi
-        elif command == 'backward':
-            player.set_time(player.get_time() - 10000)  # Indietro di 10 secondi
-        elif command == 'quit':
-            player.stop()
-            break
-        else:
-            print("Comando non valido. Riprova.")
+def play_stream(file_path):
+    subprocess.run(['vlc', file_path])
 
 def receive_stream(sock):
     temp_file_path = '/tmp/stream.mp3'
@@ -46,28 +17,31 @@ def receive_stream(sock):
             if not data:
                 break
             f.write(data)
-    print("[INFO] Streaming terminato, file salvato in /tmp/stream.mp3")
+    threading.Thread(target=play_stream, args=(temp_file_path,)).start()
 
 def connection():
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
         sock.connect((SERVER_HOST, SERVER_PORT))
 
         while True:
-            response = sock.recv(BUFFERSIZE).decode().strip()
-            print(f"[SERVER] {response}")
+            response = sock.recv(BUFFERSIZE).decode(errors='ignore').strip()
 
             if "Verrai disconnesso." in response or "Arrivederci!" in response or "Connessione chiusa" in response:
+                print(f"[SERVER] {response}")
                 print("Disconnessione dal server.")
                 break
 
-            message = input("Tu: ")
-            sock.sendall(message.encode())
-
-            if 'Riproduco il file' in response:
-                threading.Thread(target=play_stream).start()
+            elif 'Riproduco il file' in response:
+                print(f"[SERVER] {response}")
                 receive_stream(sock)
+                break  # Dopo aver ricevuto lo stream, esci dal loop principale
 
-            if message.lower() == 'esci':
-                break
+            elif 'requiredInput' in response:
+                    message = input("Tu: ")
+                    sock.sendall(message.encode())
+            else:
+                print(f"[SERVER] {response}")
 
-connection()
+
+if __name__ == "__main__":
+    connection()

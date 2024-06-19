@@ -1,5 +1,6 @@
 import socket
 from threading import Thread, Lock
+import time
 import authuser
 import fileHandler
 import os
@@ -9,8 +10,6 @@ MUTEX = Lock()
 
 SERVER_HOST = '0.0.0.0'
 SERVER_PORT = 9999
-# SERVER_HOST = '192.168.128.237'
-# SERVER_PORT = 12345
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -24,23 +23,30 @@ def send_message(sock, message):
 def handleClient(clientSock, clientAddr):
     print(f"[INFO] Connessione accettata da: {clientAddr}")
     try:
-        send_message(clientSock, "Inserire modalità:\nRegistrazione\nAccedi\nEsci ")
+        send_message(clientSock, "Inserire modalità:\nRegistrazione\nAccedi\nEsci")
+        time.sleep(0.1)
+        send_message(clientSock, "requiredInput")
         mode = clientSock.recv(BUFFERSIZE).strip().decode('utf-8')
 
-        if mode.lower() not in ['registrazione', 'accedi']:
+        if mode.lower() not in ['registrazione', 'accedi', 'esci']:
             send_message(clientSock, "Operazione non valida. Verrai disconnesso.")
             clientSock.close()
             return
-        elif mode.lower() == 'esci':
+
+        if mode.lower() == 'esci':
             send_message(clientSock, "Arrivederci!")
             clientSock.close()
             return
+        if mode:
+            send_message(clientSock, "Username:")
+            time.sleep(0.1)
+            send_message(clientSock, "requiredInput")
+            username = clientSock.recv(BUFFERSIZE).strip().decode('utf-8')
 
-        send_message(clientSock, "Username: ")
-        username = clientSock.recv(BUFFERSIZE).strip().decode('utf-8')
-        
-        send_message(clientSock, "Password: ")
-        password = clientSock.recv(BUFFERSIZE).strip().decode('utf-8')
+            send_message(clientSock, "Password:")
+            time.sleep(0.1)
+            send_message(clientSock, "requiredInput")
+            password = clientSock.recv(BUFFERSIZE).strip().decode('utf-8')
 
         with MUTEX:
             if mode.lower() == 'registrazione':
@@ -55,6 +61,7 @@ def handleClient(clientSock, clientAddr):
                     clientSock.close()
                     return
                 send_message(clientSock, "Accesso effettuato con successo!")
+
         menu(username, clientSock, clientAddr)
 
     except Exception as e:
@@ -63,10 +70,13 @@ def handleClient(clientSock, clientAddr):
         print(f"[INFO] Connessione chiusa con: {clientAddr}")
 
 def menu(username, clientSock, clientAddr):
-    send_message(clientSock, f"\nBenvenuto {username}, inserisci l'operazione che vuoi effettuare:\n1: Streaming audio\n2: Esci\n")
+    send_message(clientSock, f"Benvenuto {username}, inserisci l'operazione che vuoi effettuare:\n1: Streaming audio\n2: Esci")
+    time.sleep(0.1)
+    send_message(clientSock, "requiredInput")
     while True:
         try:
             mode = clientSock.recv(BUFFERSIZE).strip().decode('utf-8')
+
             if mode == '1':
                 streaming(username, clientSock, clientAddr)
             elif mode == '2':
@@ -81,11 +91,10 @@ def menu(username, clientSock, clientAddr):
 
 def streaming(username, clientSock, clientAddr):
     files = fileHandler.listFiles('./files')
-    files_list_str = ''
-    for i, file_name in enumerate(files):
-        files_list_str += f"ID: {i} \tAudio: {file_name}\n"
-
+    files_list_str = '\n'.join(f"ID: {i} \tAudio: {file_name}" for i, file_name in enumerate(files))
     send_message(clientSock, f"Scegli l'ID dell'audio da riprodurre\n{files_list_str}")
+    time.sleep(0.1)
+    send_message(clientSock, "requiredInput")
     chosenAudioId = clientSock.recv(BUFFERSIZE).strip().decode('utf-8')
     send_message(clientSock, f"Riproduco il file {chosenAudioId}")
 
@@ -94,10 +103,6 @@ def streaming(username, clientSock, clientAddr):
         if 0 <= chosen_audio_id < len(files):
             chosen_audio = files[chosen_audio_id]
             file_path = os.path.abspath(f'./files/{chosen_audio}')
-
-            if not os.access(file_path, os.R_OK):
-                send_message(clientSock, "Errore: il file non può essere letto. Verifica i permessi.")
-                return
 
             print(f"[INFO] L'utente {username} ha scelto di riprodurre: {chosen_audio}")
 
