@@ -1,13 +1,22 @@
 import socket
 import subprocess
 import threading
+import psutil
+import time
 
-SERVER_HOST = 'localhost'
-SERVER_PORT = 9999
+SERVER_HOST = '192.168.1.72'
+SERVER_PORT = 12345
 BUFFERSIZE = 1024
 
 def play_stream(file_path):
-    subprocess.run(['vlc', file_path])
+    process = subprocess.Popen(['vlc', file_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    
+    # Monitoraggio del processo VLC
+    while True:
+        if process.poll() is not None:
+            # Il processo VLC è terminato, esci dal loop
+            break
+        time.sleep(1)
 
 def receive_stream(sock):
     temp_file_path = '/tmp/stream.mp3'
@@ -34,7 +43,7 @@ def connection():
             elif 'Riproduco il file' in response:
                 print(f"[SERVER] {response}")
                 receive_stream(sock)
-                break  # Dopo aver ricevuto lo stream, esci dal loop principale
+                break
 
             elif 'requiredInput' in response:
                     message = input("Tu: ")

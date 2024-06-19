@@ -1,4 +1,2 @@
 Adel:Shatani
-mau:a
-a:a
-aa:a1:1
+luchino:gat

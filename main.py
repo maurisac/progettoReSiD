@@ -8,8 +8,12 @@ import os
 BUFFERSIZE = 1024
 MUTEX = Lock()
 
-SERVER_HOST = '0.0.0.0'
-SERVER_PORT = 9999
+#SERVER_HOST = '0.0.0.0'
+#SERVER_PORT = 9999
+
+SERVER_HOST = '192.168.1.72'
+SERVER_PORT = 12345
+
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
