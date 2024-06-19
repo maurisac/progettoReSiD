@@ -1,7 +1,6 @@
 import socket
 import subprocess
 import threading
-import psutil
 import time
 
 SERVER_HOST = '192.168.1.72'
