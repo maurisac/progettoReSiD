@@ -3,29 +3,29 @@ import subprocess
 import threading
 import time
 
-SERVER_HOST = '192.168.1.72'
-SERVER_PORT = 12345
-BUFFERSIZE = 1024
+SERVER_HOST = 'localhost'
+SERVER_PORT = 9999
+BUFFERSIZE = 4096
 
-def play_stream(file_path):
-    process = subprocess.Popen(['vlc', file_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    
-    # Monitoraggio del processo VLC
-    while True:
-        if process.poll() is not None:
-            # Il processo VLC è terminato, esci dal loop
-            break
-        time.sleep(1)
+def play_stream(sock):
+    process = subprocess.Popen(
+        ['vlc', '--file-caching=3000', '-'], # Buffering might be needed
+        stdin=subprocess.PIPE,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL
+    )
 
-def receive_stream(sock):
-    temp_file_path = '/tmp/stream.mp3'
-    with open(temp_file_path, 'wb') as f:
+    try:
         while True:
             data = sock.recv(BUFFERSIZE)
             if not data:
                 break
-            f.write(data)
-    threading.Thread(target=play_stream, args=(temp_file_path,)).start()
+            process.stdin.write(data)
+    except Exception as e:
+        print(f"[ERROR] Errore durante lo streaming: {e}")
+    finally:
+        process.stdin.close()
+        process.wait()
 
 def connection():
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
@@ -41,15 +41,14 @@ def connection():
 
             elif 'Riproduco il file' in response:
                 print(f"[SERVER] {response}")
-                receive_stream(sock)
+                play_stream(sock)
                 break
 
             elif 'requiredInput' in response:
-                    message = input("Tu: ")
-                    sock.sendall(message.encode())
+                message = input("Tu: ")
+                sock.sendall(message.encode())
             else:
                 print(f"[SERVER] {response}")
-
 
 if __name__ == "__main__":
     connection()

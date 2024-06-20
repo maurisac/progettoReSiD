@@ -5,14 +5,14 @@ import authuser
 import fileHandler
 import os
 
-BUFFERSIZE = 1024
+BUFFERSIZE = 4096
 MUTEX = Lock()
 
-#SERVER_HOST = '0.0.0.0'
-#SERVER_PORT = 9999
+SERVER_HOST = '0.0.0.0'
+SERVER_PORT = 9999
 
-SERVER_HOST = '192.168.1.72'
-SERVER_PORT = 12345
+#SERVER_HOST = '192.168.1.72'
+#SERVER_PORT = 12345
 
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -116,6 +116,7 @@ def streaming(username, clientSock, clientAddr):
                     if not data:
                         break
                     clientSock.sendall(data)
+                    time.sleep(0.1)
 
             send_message(clientSock, "Streaming terminato.")
         else:
