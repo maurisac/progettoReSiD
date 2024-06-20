@@ -9,12 +9,16 @@ VLC Media Player - Used for audio playback on the client side. <br>
 ### Python Libraries
 Ensure you have the following Python libraries installed:
 
-vlc <br>
+*vlc <br>
 socket <br>
 threading <br>
-You can install the required VLC Python library via pip: <br>
+subprocess <br>
+time <br>
+os* <br>
+
+You can install the required, and not pre-installed, VLC Python library via apt: <br>
 ```sh
-pip install python-vlc
+apt install python3-vlc
 ```
 
 ## Running the code
@@ -22,7 +26,7 @@ pip install python-vlc
 To run the code, you first need to open the server
 ### Run the server
 ```sh
-python3 main.py
+python3 server.py
 ```
 
 
