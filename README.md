@@ -16,3 +16,18 @@ You can install the required VLC Python library via pip: <br>
 ```sh
 pip install python-vlc
 ```
+
+## Running the code
+
+To run the code, you first need to open the server
+### Run the server
+```sh
+python3 main.py
+```
+
+
+### Run the client(s)
+To run the client, you need to execute this command:
+```sh
+python3 client.py
+```
