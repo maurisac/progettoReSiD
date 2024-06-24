@@ -1,1 +1,0 @@
-# Realizzare in Python/libVLC un sistema client-server multithread con autenticazione, per lo streaming audio multiutente (più stream in contemporanea). 
