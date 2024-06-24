@@ -35,3 +35,19 @@ To run the client, you need to execute this command:
 ```sh
 python3 client.py
 ```
+
+## Project Structure
+
+>├── client.py           # Client script <br>
+>├── main.py             # Server script <br>
+>├── authuser.py         # Authentication handler <br>
+>├── fileHandler.py      # File handling utilities <br>
+>├── files/              # Directory for audio files <br>
+>└── README.md           # This file <br>
+>
+## Troubleshooting
+<ul>
+<li>VLC Not Opening: Ensure VLC is correctly installed and accessible via the command line. </li>
+<li>Permission Issues: Check that the files directory and its contents are readable. </li>
+<li>Network Issues: Verify that the server and client are on the same network and that the server's IP address and port are correctly specified in the client script. </li>
+</ul>
