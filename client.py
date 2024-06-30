@@ -1,7 +1,5 @@
 import socket
 import subprocess
-import threading
-import time
 
 SERVER_HOST = 'localhost'
 SERVER_PORT = 9999
@@ -9,7 +7,7 @@ BUFFERSIZE = 4096
 
 def play_stream(sock):
     process = subprocess.Popen(
-        ['vlc', '--file-caching=3000', '-'], # Buffering might be needed
+        ['vlc', '--file-caching=3000', '-'],
         stdin=subprocess.PIPE,
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL
