@@ -18,7 +18,7 @@ SERVER_PORT = 9999
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 server.bind((SERVER_HOST, SERVER_PORT))
-server.listen(5)
+server.listen()
 print(f"Server in ascolto all'indirizzo: {SERVER_HOST}:{SERVER_PORT}")
 
 def send_message(sock, message):
